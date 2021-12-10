@@ -1,0 +1,14 @@
+<nav>
+    <ul>
+        {% if request.user.is_authenticated %}
+            <li>{{request.user}}</li>
+            <li>Profil</li>
+            <li><a href="{% url 'logout' %}">Deconectare</a></li>
+            
+        {% else %}
+            <li><a href="{% url 'login' %}">Autentificare</a></li>
+            <li><a href="{% url 'register' %}">Inregistrare</a></li>
+        {% endif %}
+    </ul>
+
+</nav>
