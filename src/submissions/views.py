@@ -3,6 +3,7 @@ from .eval_submission import eval_submission
 import problem
 from multiprocessing import Process
 from pathlib import Path
+import os
 # Create your views here.
 from .models import *
 from problem.models import *
@@ -29,9 +30,12 @@ def send_submission(request):
             extension = extension_by_compiler[compiler_type]
             new_submission = Submission.objects.create(problem = problem, user = request.user, compiler_type=compiler_type)
             new_submission.save()
-            with open(str(BASE_DIR) + "/source_code/" + str(new_submission.id) + extension, "w") as f:
+            
+            submission_path = str(BASE_DIR) + "/source_code/" + str(new_submission.id) 
+            os.mkdir(submission_path)
+            with open(submission_path + "/main" + extension, "w") as f:
                 f.write(source_code)
-            evaluation_process = Process(target=eval_submission, args=(new_submission.id, extension, problem))
+            evaluation_process = Process(target=eval_submission, args=(new_submission.id, extension, problem, compiler_type))
             evaluation_process.start()
         return redirect("problem", problem.title_id)
     return redirect("home")
