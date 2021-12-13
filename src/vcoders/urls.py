@@ -24,5 +24,5 @@ urlpatterns = [
     path("login/", login_view, name="login"),
     path("logout/", logout_user, name="logout"),
     path("register/", register_view, name="register"),
-    
+    path("submisii/", include("submissions.urls")),
 ]

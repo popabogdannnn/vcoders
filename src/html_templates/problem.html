@@ -7,4 +7,12 @@
     <p>{{problem.statement}}</p>
     
 
+    {% if request.user.is_authenthicated %}
+        <form action="" method="POST">
+            {% csrf_token %}
+            
+            
+        </form>
+    {% endif %}
+
 {% endblock content_base_body %}

@@ -14,7 +14,7 @@ def problems_view(request):
 
 def problem_view(request, problem_id):
     
-    problem = Problem.objects.get(id=problem_id)
+    problem = Problem.objects.get(title_id=problem_id)
     context = {
         "problem" : problem
     }

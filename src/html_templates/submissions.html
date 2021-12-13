@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content_base_body %}
+
+    <h1>Submisii</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Problema</th>
+            <th>Scor</th>
+        </tr>
+
+        {% for submission in submission_list %}
+            <th>{{submission.id}}</th>
+            <th>{{submission.user.username}}</th>
+            <th>{{submission.problem.title}}</th>
+            <th>{{submission.verdict}}</th>
+        {% endfor %}
+    </table>
+
+{% endblock content_base_body %}

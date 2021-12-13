@@ -1,5 +1,7 @@
 <nav>
     <ul>
+        <li><a href="{%url 'home' %}">Acasă</a></li>
+        <li><a href="{%url 'all_submissions' %}">Submisii</a></li>
         {% if request.user.is_authenticated %}
             <li>{{request.user}}</li>
             <li>Profil</li>
@@ -7,7 +9,7 @@
             
         {% else %}
             <li><a href="{% url 'login' %}">Autentificare</a></li>
-            <li><a href="{% url 'register' %}">Inregistrare</a></li>
+            <li><a href="{% url 'register' %}">Înregistrare</a></li>
         {% endif %}
     </ul>
 
