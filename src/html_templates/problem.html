@@ -6,12 +6,19 @@
 
     <p>{{problem.statement}}</p>
     
-
-    {% if request.user.is_authenthicated %}
-        <form action="" method="POST">
+    {% if request.user.is_authenticated %}
+        <form action="{% url 'send-submission' %}" method="POST">
             {% csrf_token %}
-            
-            
+            <input type="hidden" name="problem_id" value="{{problem.id}}">
+            <label for="compiler-type">Compilator</label>
+            <select name="compiler_type" id="compiler-type">
+                <option value="c++64" selected>C++ 64bit</option>
+                <option value="c++32">C++ 32bit</option>
+                <option value="c64">C 64bit</option>
+                <option value="c32">C 32bit</option>
+            </select>
+            <textarea name="source_code" cols="30" rows="10" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+            <input type="SUBMIT" name="submit" value="Evaluează">
         </form>
     {% endif %}
 

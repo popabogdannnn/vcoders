@@ -8,6 +8,7 @@ from problem import models as ProblemModels
 class Submission(models.Model):
     problem = models.ForeignKey(ProblemModels.Problem, on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    compiler_type = models.CharField(max_length=10, default="c++64")
     verdict = models.CharField(max_length=10, default="-")
     date = models.DateTimeField(default=datetime.now)
 

@@ -12,10 +12,12 @@
         </tr>
 
         {% for submission in submission_list %}
-            <th>{{submission.id}}</th>
-            <th>{{submission.user.username}}</th>
-            <th>{{submission.problem.title}}</th>
-            <th>{{submission.verdict}}</th>
+            <tr>
+                <th>{{submission.id}}</th>
+                <th>{{submission.user.username}}</th>
+                <th>{{submission.problem.title}}</th>
+                <th>{{submission.verdict}}</th>
+            </tr>
         {% endfor %}
     </table>
 
