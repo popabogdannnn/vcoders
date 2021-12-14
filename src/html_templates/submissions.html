@@ -13,7 +13,7 @@
 
         {% for submission in submission_list %}
             <tr>
-                <th>{{submission.id}}</th>
+                <th><a href="{% url 'submission_at_id' submission.id%}">{{submission.id}}</a></th>
                 <th>{{submission.user.username}}</th>
                 <th>{{submission.problem.title}}</th>
                 <th>{{submission.verdict}}</th>

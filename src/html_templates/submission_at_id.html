@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content_base_body %}
+
+    <h1>Submisie</h1>
+
+    <h4>Compilare</h4>
+    <p>{{compilation_error}}</p>
+    <p>{{compilation_warnings}}</p>
+
+    <table>
+        <tr>
+            <th>Etichetă</th>
+            <th>Mesaj evaluator</th>
+            <th>Timp execuție</th>
+            <th>Memorie</th>
+            <th>Scor</th>
+        </tr>
+
+        {% for tag, test_run in test_runs.items%}
+            <tr>
+                <th>{{tag}}</th>
+                <th>{{test_run.eval_message}}</th>
+                <th>{{test_run.time_seconds}}</th>
+                <th>{{test_run.memory}}</th>
+                <th>{{test_run.points_awarded}}</th>
+            </tr>
+        {% endfor %}
+
+    </table>
+
+{% endblock content_base_body %}

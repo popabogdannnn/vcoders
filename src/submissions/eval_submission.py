@@ -50,12 +50,23 @@ def eval_submission(submission_id, extension, problem, compiler_type):
     checker_compilation = evaluation["checker-compilation"]
     evaluation.pop("checker-compilation")
 
-    if(compilation_result["error"] == "success"):
-        verdict = 0
+    ok = True
+    if(compilation_result["error"] != "success"):
+        ok = False
+    if(submission_data["checker"] == True):
+        if(checker_compilation["error"] != "success"):
+            ok = False
+
+    if(ok):
+        verdict = 0.0
         for tag, test_run in evaluation.items():
             verdict += test_run["verdict"]["points_awarded"]
+        verdict = round(verdict, 2)
     else:
-        verdict = compilation_result["error"]
+        if(compilation_result["error"] != "success"):
+            verdict = compilation_result["error"]
+        else:
+            verdict = checker_compilation["error"]
 
     curr_submission = Submission.objects.get(id = submission_id)
     curr_submission.verdict = str(verdict)
