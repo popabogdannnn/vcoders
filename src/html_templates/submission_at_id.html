@@ -4,13 +4,20 @@
 
     <h1>Submisie</h1>
 
-    <h4>Compilare</h4>
-    <p>{{compilation_error}}</p>
-    <p>{{compilation_warnings}}</p>
+    <h4>{{user}}</h4>
+    <h4>{{problem.title}}</h4>
+
+    {% if compilation_error != "success"%}
+        <h4>{{compilation_error}}</h4>
+    {% endif %}
+    <h4>Mesaj compilare</h4>
+    <pre contenteditable="false" editable="false">
+        {{compilation_warnings}}
+    </pre>
 
     <table>
         <tr>
-            <th>Etichetă</th>
+            <th>Test</th>
             <th>Mesaj evaluator</th>
             <th>Timp execuție</th>
             <th>Memorie</th>
@@ -26,7 +33,12 @@
                 <th>{{test_run.points_awarded}}</th>
             </tr>
         {% endfor %}
-
     </table>
+    
+    {% if can_see_code %}
+        <pre contenteditable="false" editable="false">
+            {{source_code}}
+        </pre>
+    {% endif %}
 
 {% endblock content_base_body %}

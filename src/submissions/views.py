@@ -4,14 +4,12 @@ from problem.views import test
 from .eval_submission import eval_submission, read_json
 import problem
 from multiprocessing import Process
-from pathlib import Path
 import os
+from .auxiliary_functions import read_json, BASE_DIR
 # Create your views here.
 from .models import *
 from problem.models import *
 MAX_CODE_SIZE = 20 * 1024
-
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 extension_by_compiler = {
     "c++64" : ".cpp",
@@ -55,7 +53,6 @@ def view_submission(request, submission_id):
     submission = Submission.objects.get(id=submission_id)
     submission_path = str(BASE_DIR) + "/source_code/" + str(submission_id)
     evaluation = None
-
     try:
         evaluation = read_json(f"{submission_path}/{submission_id}.json")
     except:
@@ -63,9 +60,8 @@ def view_submission(request, submission_id):
     
     context = {
         "submission" : submission
-        
     }
-    print(submission_path)
+    #print(submission_path)
     if evaluation != None:
         evaluation.pop("submission_id")
 
@@ -73,12 +69,12 @@ def view_submission(request, submission_id):
         evaluation.pop("compilation")
         context["compilation_warnings"] = compilation_result["warnings"]
         context["compilation_error"] = compilation_result["error"]
-        print(compilation_result["warnings"])
+        #print(compilation_result["warnings"])
         checker_compilation = evaluation["checker-compilation"]
         evaluation.pop("checker-compilation")
 
         context["test_runs"] = {
-
+            
         }
         for tag, test_run in evaluation.items():
             points_awarded = float(test_run["verdict"]["points_awarded"])
@@ -88,15 +84,37 @@ def view_submission(request, submission_id):
             time_nanos /= 1e9
             time_seconds += time_nanos
             time_seconds = round(time_seconds, 3)
-            memory = f'{int(test_run["usage"]["memory"] / 1000)}kB'
+            if(int(test_run["usage"]["memory"] / 1000) < 1000):
+                memory = f'{int(test_run["usage"]["memory"] / 1000)}KB'
+            else:
+                memory = f'{round(test_run["usage"]["memory"] / 1e6, 2)}MB'
             context["test_runs"][tag] = {
                 "eval_message" : eval_message,
                 "time_seconds" : time_seconds,
                 "memory" : memory,
                 "points_awarded" : points_awarded,
             }
-    
+    context["user"] = submission.user
+    context["problem"] = submission.problem
+    context["can_see_code"] = False
+    if request.user == submission.user or request.user.is_superuser:
+        source_code = ""
+        with open(f"{submission_path}/main{extension_by_compiler[submission.compiler_type]}") as f:
+            source_code = f.read()
+        context["source_code"] = source_code
+        context["can_see_code"] = True
+
     return render(request, "submission_at_id.html", context)
 
-def view_problem_submissions(request):
-    pass
+def view_problem_submissions(request, problem_id):
+    problem = Problem.objects.get(title_id = problem_id)
+    username = request.GET.get("user_id")
+    if(username):
+        user = User.objects.get(username=username)
+        submission_list_query_set = Submission.objects.filter(problem = problem, user = user)
+    else:
+        submission_list_query_set = Submission.objects.filter(problem = problem)
+    context = {
+        "submission_list": submission_list_query_set
+    }
+    return render(request, "submissions.html", context)

@@ -1,13 +1,9 @@
 import time
 import os
 from .models import Submission
-from pathlib import Path
 import json
-BASE_DIR = str(Path(__file__).resolve().parent.parent.parent)
+from .auxiliary_functions import read_json, BASE_DIR
 
-def read_json(file_name):
-    file_submission_data = open(file_name)
-    return json.load(file_submission_data)
 
 def eval_submission(submission_id, extension, problem, compiler_type):
     submission_path = BASE_DIR + "/source_code/" + str(submission_id) 

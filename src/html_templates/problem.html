@@ -2,9 +2,29 @@
 
 {% block content_base_body %}
 
-    <h1>{{problem.title}}</h1>
-
-    <p>{{problem.statement}}</p>
+    <table>
+        <tr>
+            <th><h4>{{problem.title}}</h4></th>
+            <th></th>
+        </tr>
+        <tr>
+            <th>Memorie</th>
+            <th>{{memory_constraints}}</th>
+        </tr>
+        <tr>
+            <th>Timp de execuție</th>
+            <th>{{time_limit_constraint}}</th>
+        </tr>
+        <tr>
+            <th>Operații IO</th>
+            <th>{{io_files}}</th>
+        </tr>
+    </table>
+    <a href="{% url 'submission_at_problem' problem.title_id%}">Soluții</a>
+    {% if request.user.is_authenticated %}
+        <a href="{% url 'submission_at_problem' problem.title_id%}?user_id={{request.user.username}}">Soluțiile mele</a>
+    {% endif %}
+    <p>{{statement.statement}}</p>
     
     {% if request.user.is_authenticated %}
         <form action="{% url 'send-submission' %}" method="POST">
