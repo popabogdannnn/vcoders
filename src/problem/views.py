@@ -23,9 +23,12 @@ def problem_view(request, problem_id):
     context["memory_constraints"] = f"{round(constraints['memory'] / 1000, 2)}MB/{round(constraints['stack_memory'] / 1000, 2)}MB"
     context["time_limit_constraint"] = f"{round(constraints['execution_time'] / 1000, 2)}s"
     if(constraints["stdio"]):
-        context["io_files"] = "stdin/stdout"
+        context["in_file"] = "stdin"
+        context["out_file"] = "stdout"
     else:
-        context["io_files"] = f"{constraints['io_filename']}.in/{constraints['io_filename']}.out"
+        context["in_file"] = f"{constraints['io_filename']}.in"
+        context["out_file"] = f"{constraints['io_filename']}.out"
+
     context["statement"] = statement
     return render(request, "problem.html", context)
     

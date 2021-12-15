@@ -15,7 +15,7 @@
             <tr>
                 <th><a href="{% url 'submission_at_id' submission.id%}">{{submission.id}}</a></th>
                 <th>{{submission.user.username}}</th>
-                <th>{{submission.problem.title}}</th>
+                <th><a href="{% url 'problem' submission.problem.title_id%}">{{submission.problem.title}}</a></th>
                 <th>{{submission.verdict}}</th>
             </tr>
         {% endfor %}

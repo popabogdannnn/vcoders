@@ -1,3 +1,11 @@
 {
-    "statement" : "Se citesc de la tastatură două numere naturale A și B. Să se afișeze pe ecran rezultatul A + B."
+    "statement" : "Se citesc de la tastatură două numere naturale $A$ și $B$. Să se afișeze pe ecran rezultatul $A + B$.",
+    "input": "Programul citește de la tastatură numerele $A$ și $B$, separate printr-un spațiu.",
+    "output": "Programul va afișa pe ecran numărul $S$, reprezentând rezultatul $A + B$.",
+    "examples" : {
+        "1" : {
+            "input" : "3 4",
+            "output" : "7"
+        }
+    }
 }

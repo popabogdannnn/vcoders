@@ -1,3 +1,15 @@
 {
-    "statement" : "O problemă foarte frumoasă și grea."
+    "statement" : "Studii recente arată că într-adevăr există viață inteligentă pe Marte. Problema de acum este că omenirea se află în război cu Marțienii și cea mai bună strategie pentru noi este să atacăm primii. Pe Marte se află un sistem de cale ferată complex alcătuit din $N$ orașe conectate de $M$ căi ferate bidirecționale. Omenirea a apelat la cel mai mare bombardier posibil, domnul RANDy, ca să distrugă căile ferate. Pentru că este un maniac, el mai are doar o bombă disponibilă, deci va putea ținti doar o cale ferată. RANDy va ținti doar căile ferate strategice. O cale ferată este strategică dacă și numai dacă există o pereche de orașe $(x, y)$ astfel încât să putem ajunge de la $x$ la $y$ și după bombardarea acesteia, să nu mai poți ajunge de la $x$ la $y$. Marțienii încep să se prindă de planul nostru, așa că încep să construiască $Q$ noi căi ferate. După fiecare cale ferată nou adăugată, RANDy vrea să știe câte căi ferate strategice există. El este în dubii, și vă cere ajutorul.",
+    "input": "Programul citește de la tastatură numerele $N$, $M$ și $Q$, separate printr-un spațiu. Pe următoarele $M$ linii se află două numere $x$ și $y$ separate printr-un spațiu, însemnând că există o cale ferată de la orașul $x$ la $y$. Pe următoarele $Q$ linii se află două numere $x$ și $y$ separate printr-un spațiu, însemnând că Marțienii vor construi o cale ferată de la orașul $x$ la $y$.",
+    "output": "Programul va afișa pe ecran $Q$ linii, pe linia $i$ se află un singur număr $s$, reprezentând numărul de căi ferate strategice după ce Marțienii au construit primele $i$ căi ferate.",
+    "examples" : {
+        "1" : {
+            "input" : "5 4 2\n5 1\n3 2\n2 5\n4 2\n1 2\n5 3",
+            "output" : "2\n1"
+        },
+        "2" : {
+            "input" : "6 5 2\n5 1\n3 2\n2 5\n4 2\n1 2\n4 3\n6 5",
+            "output" : "0\n1"
+        }
+    }
 }
