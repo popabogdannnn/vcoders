@@ -27,7 +27,10 @@
         <a href="{% url 'submission_at_problem' problem.title_id%}?user_id={{request.user.username}}">Soluțiile mele</a>
     {% endif %}
     
-    <p>{{statement.statement}}</p>
+    {% for line in statement.statement %}
+        <p>{{line|urlize}}<p>
+    {% endfor %}
+    
     <h4>Date de intrare</h4>
     <p>{{statement.input}}</p>
     <h4>Date de ieșire</h4>

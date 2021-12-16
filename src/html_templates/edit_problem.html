@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content_base_body %}
+
+    <h2>Editează problema {{problem.title}}</h2>
+
+    <p>
+        Dacă operațiile nu sunt la consolă atunci se consideră că fișierele de intrare sunt 
+        <strong>{{problem.title_id}}.in/{{problem.title_id}}.out</strong>.
+    </p>
+    <form action="" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="checker">Este nevoie de checker?</label>
+        <input type="checkbox" name="checker" id="checker" {%if restrictions.checker %} checked {% endif %}>
+        <label for="stdio">Operațiile io sunt la consolă?</label>
+        <input type="checkbox" name="stdio" id="stdio" {%if restrictions.stdio %} checked {% endif %}>
+        <label for="execution_time" >Timp de execuție</label>
+        <input type="number" name="execution_time" id="execution_time" min="50" required="true" value="{{restrictions.execution_time}}">
+        <label for="memory">Memorie în kB</label>
+        <input type="number" name="memory" id="memory" required="true" min="1000" max="512000" value="{{restrictions.memory}}">
+        <label for="stack_memory">Memorie pe stivă în kB</label>
+        <input type="number" name="stack_memory" id="stack_memory" required="true" min="1000" max="512000" value="{{restrictions.stack_memory}}">
+        <h3>Enunț</h3>
+        <textarea name="statement" cols="30" rows="10">{{statement.statement}}</textarea>
+
+        <h3>Date de intrare</h3>
+        <textarea name="input" cols="30" rows="10">{{statement.input}}</textarea>
+
+        <h3>Date de ieșire</h3>
+        <textarea name="output" cols="30" rows="10">{{statement.output}}</textarea>
+
+        <h3>Exemple</h3>
+        <textarea name="examples" cols="30" rows="10">{% for tag, example in statement.examples.items %}
+@-nou_exemplu-@
+@-input-@
+{{example.input}}
+@-output-@
+{{example.output}}{% endfor %}</textarea>
+
+        <h3>Indicații de rezolvare</h3>
+        <textarea name="hint" id="" cols="30" rows="10">{{statement.hint}}</textarea>
+        <h3>Teste</h3>
+        <p>Teste pe care le văd</p>
+        <p>{{tests_seen}}</p>
+        <input type="file" name="tests" accept=".zip">
+        <br>
+        <input type="SUBMIT" name="submit" value="Salvează">
+    </form>
+
+{% endblock content_base_body %}

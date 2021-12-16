@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content_base_body %}
+
+    <h2>Adaugă problemă</h2>
+
+    <form action="" method="POST">
+        {% csrf_token %}
+        <label for="title">Titlu</label>
+        <input type="text" name="title" placeholder="Titlu problemă" maxlength="64">
+        <input type="SUBMIT" name="submit" value="Creează problemă">
+    </form>
+
+{% endblock content_base_body %}

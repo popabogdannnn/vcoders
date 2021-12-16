@@ -1,10 +1,9 @@
 from django.shortcuts import redirect, render
-
-from problem.views import test
 from .eval_submission import eval_submission, read_json
 import problem
 from multiprocessing import Process
 import os
+from django.contrib.auth.decorators import login_required
 from .auxiliary_functions import read_json, BASE_DIR
 # Create your views here.
 from .models import *
@@ -18,9 +17,9 @@ extension_by_compiler = {
     "c32" : ".c",
 }
 
+@login_required(login_url = 'login')
 def send_submission(request):
     if request.method == "POST" and request.user.is_authenticated:
-        
         problem_id = request.POST.get("problem_id")
         problem = Problem.objects.get(id = problem_id)
         compiler_type = request.POST.get("compiler_type")

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-
+from .decorators import *
 from .forms import CreateUserForm
 
 # Create your views here. 
@@ -10,8 +10,8 @@ from .forms import CreateUserForm
 def home_view(request):
     return render(request, "home.html", {})
 
+@unauthenticated_user
 def login_view(request):
-    
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -32,9 +32,9 @@ def logout_user(request):
     logout(request)
     return redirect("home")
 
+@unauthenticated_user
 def register_view(request):
     form = CreateUserForm()
-
 
     if request.method == "POST":
         form = CreateUserForm(request.POST)

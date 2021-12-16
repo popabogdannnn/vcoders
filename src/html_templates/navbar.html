@@ -5,6 +5,7 @@
         {% if request.user.is_authenticated %}
             <li>{{request.user}}</li>
             <li>Profil</li>
+            <li><a href="{% url 'add_problem'%}">Adaugă problemă</a></li>
             <li><a href="{% url 'logout' %}">Deconectare</a></li>
             
         {% else %}
