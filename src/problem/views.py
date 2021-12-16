@@ -10,7 +10,7 @@ import re
 from django.core.files.storage import FileSystemStorage
 import os 
 def problems_view(request):
-    problem_list = [problem for problem in Problem.objects.filter(accepted=True)]
+    problem_list = [problem for problem in Problem.objects.all()]
     context = {
         "problem_list" : problem_list
     }
@@ -19,7 +19,7 @@ def problems_view(request):
 
 def problem_view(request, problem_id):
     problem = Problem.objects.get(title_id=problem_id)
-    if (problem == None or not problem.accepted) and not request.user.is_superuser:
+    if (problem == None):
         return HttpResponse("Problema nu există")
     context = {
         "problem" : problem
@@ -44,9 +44,9 @@ def add_problem_view(request):
         title = request.POST.get("title")
         if(len(title) > 0):
             title = " ".join(title.split())
-            title_id = "-".join(title.lower().split())
+            title_id = "_".join(title.lower().split())
             if len(title) <= 64 and not Problem.objects.filter(title_id=title_id).exists():
-                Problem.objects.create(title=title, title_id=title_id)
+                Problem.objects.create(title=title, title_id=title_id, posted_by=request.user)
                 if(not os.path.exists(f"{BASE_DIR}/problems/{title_id}")):
                     os.mkdir(f"{BASE_DIR}/problems/{title_id}")
                     os.system(f"cp -r {BASE_DIR}/problems/sumab/. {BASE_DIR}/problems/{title_id}/")
@@ -140,7 +140,6 @@ def edit_problem_view(request, title_id):
         problem = Problem.objects.get(title_id = title_id)
         problem.accepted = False
         problem.save()
-
     problem = Problem.objects.get(title_id = title_id)
     statement = read_json(f"{BASE_DIR}/statements/{title_id}.json")
     restrictions = read_json(f"{BASE_DIR}/problems/{title_id}/submission_data.json")
@@ -159,6 +158,9 @@ def edit_problem_view(request, title_id):
             for line in lines:
                 line = line.split()
                 if(len(line) == 2):
+                    print(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.ok")
                     if(os.path.exists(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.in") and os.path.exists(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.ok")):
+                        
                         context["tests_seen"].append(line[0])
+
     return render(request, "edit_problem.html", context)
