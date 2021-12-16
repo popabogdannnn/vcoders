@@ -42,21 +42,21 @@ def problem_view(request, problem_id):
 def add_problem_view(request):
     if request.method == "POST":
         title = request.POST.get("title")
-
-        title = " ".join(title.split())
-        title_id = "-".join(title.lower().split())
-        if len(title) <= 64 and not Problem.objects.filter(title_id=title_id).exists():
-            Problem.objects.create(title=title, title_id=title_id)
-            if(not os.path.exists(f"{BASE_DIR}/problems/{title_id}")):
-                os.mkdir(f"{BASE_DIR}/problems/{title_id}")
-                os.system(f"cp -r {BASE_DIR}/problems/sumab/. {BASE_DIR}/problems/{title_id}/")
-                restrictions = read_json(f"{BASE_DIR}/problems/{title_id}/submission_data.json")
-                restrictions["io_filename"] = title_id
-                with open(f"{BASE_DIR}/problems/{title_id}/submission_data.json") as f:
-                    json.dump(restrictions, f)
-            if(not os.path.exists(f"{BASE_DIR}/statements/{title_id}.json")):
-                os.system(f"cp {BASE_DIR}/statements/sumab.json {BASE_DIR}/statements/{title_id}.json")
-            return redirect("edit_problem", title_id)
+        if(len(title) > 0):
+            title = " ".join(title.split())
+            title_id = "-".join(title.lower().split())
+            if len(title) <= 64 and not Problem.objects.filter(title_id=title_id).exists():
+                Problem.objects.create(title=title, title_id=title_id)
+                if(not os.path.exists(f"{BASE_DIR}/problems/{title_id}")):
+                    os.mkdir(f"{BASE_DIR}/problems/{title_id}")
+                    os.system(f"cp -r {BASE_DIR}/problems/sumab/. {BASE_DIR}/problems/{title_id}/")
+                    restrictions = read_json(f"{BASE_DIR}/problems/{title_id}/submission_data.json")
+                    restrictions["io_filename"] = title_id
+                    with open(f"{BASE_DIR}/problems/{title_id}/submission_data.json", "w") as f:
+                        json.dump(restrictions, f)
+                if(not os.path.exists(f"{BASE_DIR}/statements/{title_id}.json")):
+                    os.system(f"cp {BASE_DIR}/statements/sumab.json {BASE_DIR}/statements/{title_id}.json")
+                return redirect("edit_problem", title_id)
     context = {
 
     }
@@ -102,7 +102,7 @@ def edit_problem_view(request, title_id):
 
         restrictions["checker"] = checker
         restrictions["stdio"] = stdio
-        restrictions["execution_time"] = int(execution_time)
+        restrictions["execution_time"] = max(int(execution_time), 50)
         restrictions["memory"] = int(memory)
         restrictions["stack_memory"] = int(stack_memory)
         
@@ -131,6 +131,7 @@ def edit_problem_view(request, title_id):
         statement["output"] = output_data
         statement["hint"] = hint
         statement["examples"] = examples_dict
+        statement["statement"] = p_statement
         
         with open(f"{BASE_DIR}/statements/{title_id}.json", "w") as f:
             json.dump(statement, f)
@@ -158,6 +159,6 @@ def edit_problem_view(request, title_id):
             for line in lines:
                 line = line.split()
                 if(len(line) == 2):
-                    if(os.path.exists(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.in" and os.path.exists(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.ok"))):
+                    if(os.path.exists(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.in") and os.path.exists(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.ok")):
                         context["tests_seen"].append(line[0])
     return render(request, "edit_problem.html", context)
