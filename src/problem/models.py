@@ -9,4 +9,4 @@ class Problem(models.Model):
     posted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return f"#{self.id} {self.title}" 
+        return f"{self.title}" 

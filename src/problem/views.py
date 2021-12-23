@@ -19,11 +19,21 @@ def problems_view(request):
 
 def problem_view(request, problem_id):
     problem = Problem.objects.get(title_id=problem_id)
+    
     if (problem == None):
+        return HttpResponse("Problema nu există")
+    
+    if (not problem.accepted and not (request.user.is_superuser or request.user == problem.posted_by)):
         return HttpResponse("Problema nu există")
     context = {
         "problem" : problem
     }
+
+    if request.user.is_superuser or request.user == problem.posted_by:
+        context["user_can_edit"] = True
+    else:
+        context["user_can_edit"] = False
+    
     constraints = read_json(f"{BASE_DIR}/problems/{problem.title_id}/submission_data.json")
     statement = read_json(f"{BASE_DIR}/statements/{problem.title_id}.json")
     context["memory_constraints"] = f"{round(constraints['memory'] / 1000, 2)}MB/{round(constraints['stack_memory'] / 1000, 2)}MB"
@@ -48,9 +58,17 @@ def add_problem_view(request):
             if len(title) <= 64 and not Problem.objects.filter(title_id=title_id).exists():
                 Problem.objects.create(title=title, title_id=title_id, posted_by=request.user)
                 if(not os.path.exists(f"{BASE_DIR}/problems/{title_id}")):
+                    #print("SALUTARE LUME")
                     os.mkdir(f"{BASE_DIR}/problems/{title_id}")
                     os.system(f"cp -r {BASE_DIR}/problems/sumab/. {BASE_DIR}/problems/{title_id}/")
                     restrictions = read_json(f"{BASE_DIR}/problems/{title_id}/submission_data.json")
+                    with open(f"{BASE_DIR}/problems/{title_id}/tests/tests.txt", "r") as f:
+                        lines = f.readlines()
+                        for line in lines:
+                            line = line.split()
+                            #print(line[0])
+                            os.system(f"mv {BASE_DIR}/problems/{title_id}/tests/{line[0]}-sumab.in {BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.in")
+                            os.system(f"mv {BASE_DIR}/problems/{title_id}/tests/{line[0]}-sumab.ok {BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.ok")
                     restrictions["io_filename"] = title_id
                     with open(f"{BASE_DIR}/problems/{title_id}/submission_data.json", "w") as f:
                         json.dump(restrictions, f)
@@ -65,6 +83,9 @@ def add_problem_view(request):
 
 @authorized_users(authorized_roles=["proponent"])
 def edit_problem_view(request, title_id):
+    problem = Problem.objects.get(title_id = title_id)
+    if(problem.posted_by != request.user and not request.user.is_superuser):
+        return HttpResponse("Nu ai acces la această resursă")
     if request.method == "POST":
         if "tests" in request.FILES:
             tests = request.FILES['tests']
@@ -137,10 +158,10 @@ def edit_problem_view(request, title_id):
             json.dump(statement, f)
         with open(f"{BASE_DIR}/problems/{title_id}/submission_data.json", "w") as f:
             json.dump(restrictions, f)
-        problem = Problem.objects.get(title_id = title_id)
+        
         problem.accepted = False
         problem.save()
-    problem = Problem.objects.get(title_id = title_id)
+    #problem = Problem.objects.get(title_id = title_id)
     statement = read_json(f"{BASE_DIR}/statements/{title_id}.json")
     restrictions = read_json(f"{BASE_DIR}/problems/{title_id}/submission_data.json")
     statement["statement"] = "\n".join(statement["statement"])
@@ -158,9 +179,8 @@ def edit_problem_view(request, title_id):
             for line in lines:
                 line = line.split()
                 if(len(line) == 2):
-                    print(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.ok")
+                    #print(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.ok")
                     if(os.path.exists(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.in") and os.path.exists(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.ok")):
-                        
                         context["tests_seen"].append(line[0])
 
     return render(request, "edit_problem.html", context)

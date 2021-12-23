@@ -5,7 +5,7 @@
     <h1>Submisie</h1>
 
     <h4>{{user}}</h4>
-    <h4>{{problem.title}}</h4>
+    <a href="{% url 'problem' problem.title_id%}">{{problem.title}}</a>
 
     {% if compilation_error != "success"%}
         <h4>{{compilation_error}}</h4>
@@ -36,9 +36,7 @@
     </table>
     
     {% if can_see_code %}
-        <pre contenteditable="false" editable="false">
-            {{source_code}}
-        </pre>
+        <pre contenteditable="false" editable="false">{{source_code}}</pre>
     {% endif %}
 
 {% endblock content_base_body %}

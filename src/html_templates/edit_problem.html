@@ -2,7 +2,7 @@
 
 {% block content_base_body %}
 
-    <h2>Editează problema {{problem.title}}</h2>
+    <h2>Editează problema <a href="{% url 'problem' problem.title_id%}">{{problem.title}}</a></h2>
 
     <p>
         Dacă operațiile nu sunt la consolă atunci se consideră că fișierele de intrare sunt 

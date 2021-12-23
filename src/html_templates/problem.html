@@ -26,7 +26,9 @@
     {% if request.user.is_authenticated %}
         <a href="{% url 'submission_at_problem' problem.title_id%}?user_id={{request.user.username}}">Soluțiile mele</a>
     {% endif %}
-    
+    {% if user_can_edit %}
+        <a href="{% url 'edit_problem' problem.title_id%}">Modifică</a>
+    {% endif %}
     {% for line in statement.statement %}
         <p>{{line|urlize}}<p>
     {% endfor %}
@@ -55,7 +57,9 @@
                 <option value="c64">C 64bit</option>
                 <option value="c32">C 32bit</option>
             </select>
-            <textarea name="source_code" cols="30" rows="10" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+            <br>
+            <textarea style="resize: none;" name="source_code" cols="75" rows="35" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+            <br>
             <input type="SUBMIT" name="submit" value="Evaluează">
         </form>
     {% endif %}
