@@ -4,7 +4,7 @@ import problem
 from multiprocessing import Process
 import os
 from django.contrib.auth.decorators import login_required
-from .auxiliary_functions import read_json, BASE_DIR
+from .auxiliary_functions import read_json, BASE_DIR, score_submission
 # Create your views here.
 from .models import *
 from problem.models import *
@@ -52,47 +52,72 @@ def view_submission(request, submission_id):
     submission = Submission.objects.get(id=submission_id)
     submission_path = str(BASE_DIR) + "/source_code/" + str(submission_id)
     evaluation = None
-    try:
-        evaluation = read_json(f"{submission_path}/{submission_id}.json")
-    except:
-        pass
+    evaluation = score_submission(submission_id, submission.problem.title_id)
+    
     
     context = {
         "submission" : submission
     }
+
+   
+
     #print(submission_path)
     if evaluation != None:
-        evaluation.pop("submission_id")
-
-        compilation_result = evaluation["compilation"]
-        evaluation.pop("compilation")
-        context["compilation_warnings"] = compilation_result["warnings"]
-        context["compilation_error"] = compilation_result["error"]
+        if("subtask_scores" in evaluation.keys()):
+            context["subtask_problem"] = True
+        else:
+            context["subtask_problem"] = False
+        context["compilation_warnings"] = evaluation["compilation_warnings"]
+        context["compilation_error"] = evaluation["compilation_warnings"]
         #print(compilation_result["warnings"])
-        checker_compilation = evaluation["checker-compilation"]
-        evaluation.pop("checker-compilation")
+        #checker_compilation = evaluation["checker-compilation"]
+        #evaluation.pop("checker-compilation")
+        #!!! --- TO ADD CHECKER ---- !!!#
+
 
         context["test_runs"] = {
             
         }
-        for tag, test_run in evaluation.items():
-            points_awarded = float(test_run["verdict"]["points_awarded"])
-            eval_message = test_run["verdict"]["reason"]
-            time_seconds = test_run["usage"]["user_time"]["secs"]
-            time_nanos = test_run["usage"]["user_time"]["nanos"]
-            time_nanos /= 1e9
-            time_seconds += time_nanos
-            time_seconds = round(time_seconds, 3)
-            if(int(test_run["usage"]["memory"] / 1000) < 1000):
-                memory = f'{int(test_run["usage"]["memory"] / 1000)}KB'
-            else:
-                memory = f'{round(test_run["usage"]["memory"] / 1e6, 2)}MB'
-            context["test_runs"][tag] = {
-                "eval_message" : eval_message,
-                "time_seconds" : time_seconds,
-                "memory" : memory,
-                "points_awarded" : points_awarded,
-            }
+        if(context["subtask_problem"]):
+            test_summary = evaluation["test_summary"]
+            for i in range(len(test_summary)):
+                eval_message = test_summary[i]["reason"]
+                time_seconds = test_summary[i]["usage"]["user_time"]["secs"]
+                time_nanos = test_summary[i]["usage"]["user_time"]["nanos"]
+                time_nanos /= 1e9
+                time_seconds += time_nanos
+                time_seconds = round(time_seconds, 3)
+                if(int(test_summary[i]["usage"]["memory"] / 1000) < 1000):
+                    memory = f'{int(test_summary[i]["usage"]["memory"] / 1000)}KB'
+                else:
+                    memory = f'{round(test_summary[i]["usage"]["memory"] / 1e6, 2)}MB'
+                context["test_runs"][str(i + 1)] = {
+                    "eval_message" : eval_message,
+                    "time_seconds" : time_seconds,
+                    "memory" : memory,
+                    "subtask": test_summary[i]["subtask"]
+                }
+            context["subtask_scores"] = evaluation["subtask_scores"]
+        else:
+            test_summary = evaluation["test_summary"]
+            for i in range(len(test_summary)):
+                points_awarded = float(test_summary[i]["score"])
+                eval_message = test_summary[i]["reason"]
+                time_seconds = test_summary[i]["usage"]["user_time"]["secs"]
+                time_nanos = test_summary[i]["usage"]["user_time"]["nanos"]
+                time_nanos /= 1e9
+                time_seconds += time_nanos
+                time_seconds = round(time_seconds, 3)
+                if(int(test_summary[i]["usage"]["memory"] / 1000) < 1000):
+                    memory = f'{int(test_summary[i]["usage"]["memory"] / 1000)}KB'
+                else:
+                    memory = f'{round(test_summary[i]["usage"]["memory"] / 1e6, 2)}MB'
+                context["test_runs"][str(i + 1)] = {
+                    "eval_message" : eval_message,
+                    "time_seconds" : time_seconds,
+                    "memory" : memory,
+                    "points_awarded" : points_awarded,
+                }
     context["user"] = submission.user
     context["problem"] = submission.problem
     context["can_see_code"] = False

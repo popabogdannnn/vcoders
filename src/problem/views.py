@@ -9,6 +9,7 @@ from .decorators import *
 import re
 from django.core.files.storage import FileSystemStorage
 import os 
+
 def problems_view(request):
     problem_list = [problem for problem in Problem.objects.all()]
     context = {
@@ -35,7 +36,7 @@ def problem_view(request, problem_id):
         context["user_can_edit"] = False
     
     constraints = read_json(f"{BASE_DIR}/problems/{problem.title_id}/submission_data.json")
-    statement = read_json(f"{BASE_DIR}/statements/{problem.title_id}.json")
+    statement = read_json(f"{BASE_DIR}/problems/{problem.title_id}/{problem.title_id}.json")
     context["memory_constraints"] = f"{round(constraints['memory'] / 1000, 2)}MB/{round(constraints['stack_memory'] / 1000, 2)}MB"
     context["time_limit_constraint"] = f"{round(constraints['execution_time'] / 1000, 2)}s"
     if(constraints["stdio"]):
@@ -72,8 +73,8 @@ def add_problem_view(request):
                     restrictions["io_filename"] = title_id
                     with open(f"{BASE_DIR}/problems/{title_id}/submission_data.json", "w") as f:
                         json.dump(restrictions, f)
-                if(not os.path.exists(f"{BASE_DIR}/statements/{title_id}.json")):
-                    os.system(f"cp {BASE_DIR}/statements/sumab.json {BASE_DIR}/statements/{title_id}.json")
+                if(not os.path.exists(f"{BASE_DIR}/problems/{title_id}/{title_id}.json")):
+                    os.system(f"cp {BASE_DIR}/problems/sumab/sumab.json {BASE_DIR}/problems/{title_id}/{title_id}.json")
                 return redirect("edit_problem", title_id)
     context = {
 
@@ -98,7 +99,7 @@ def edit_problem_view(request, title_id):
                     os.system(f"rm -rf {BASE_DIR}/problems/{title_id}/tests")
                     os.system(f"cp -r {BASE_DIR}/garbage_folder/{title_id}/tests {BASE_DIR}/problems/{title_id}/tests")
                 os.system(f"rm -rf {BASE_DIR}/garbage_folder/{title_id}")
-        statement = read_json(f"{BASE_DIR}/statements/{title_id}.json")
+        statement = read_json(f"{BASE_DIR}/problems/{title_id}/{title_id}.json")
         restrictions = read_json(f"{BASE_DIR}/problems/{title_id}/submission_data.json")
         
         checker         = request.POST.get("checker")
@@ -154,15 +155,15 @@ def edit_problem_view(request, title_id):
         statement["examples"] = examples_dict
         statement["statement"] = p_statement
         
-        with open(f"{BASE_DIR}/statements/{title_id}.json", "w") as f:
-            json.dump(statement, f)
+        with open(f"{BASE_DIR}/problems/{title_id}/{title_id}.json", "w") as f:
+            json.dump(statement, f, indent=4)
         with open(f"{BASE_DIR}/problems/{title_id}/submission_data.json", "w") as f:
             json.dump(restrictions, f)
         
         problem.accepted = False
         problem.save()
     #problem = Problem.objects.get(title_id = title_id)
-    statement = read_json(f"{BASE_DIR}/statements/{title_id}.json")
+    statement = read_json(f"{BASE_DIR}/problems/{title_id}/{title_id}.json")
     restrictions = read_json(f"{BASE_DIR}/problems/{title_id}/submission_data.json")
     statement["statement"] = "\n".join(statement["statement"])
 

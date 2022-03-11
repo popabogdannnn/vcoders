@@ -17,24 +17,59 @@
 
     <table>
         <tr>
+            {% if subtask_problem %}
+            <th>Subtask</th>
+            {% endif %}
             <th>Test</th>
             <th>Mesaj evaluator</th>
             <th>Timp execuție</th>
             <th>Memorie</th>
-            <th>Scor</th>
+            {% if not subtask_problem %}
+                <th>Scor</th>
+            {% endif %}
         </tr>
 
         {% for tag, test_run in test_runs.items%}
             <tr>
-                <th>{{tag}}</th>
-                <th>{{test_run.eval_message}}</th>
-                <th>{{test_run.time_seconds}}</th>
-                <th>{{test_run.memory}}</th>
-                <th>{{test_run.points_awarded}}</th>
+                {% if subtask_problem %}
+                    <td>
+                        {% for x in test_run.subtask %}
+                            {%if not forloop.last %}
+                                {{x}}, 
+                            {% else %}
+                                {{x}}
+                            {% endif %}
+                            
+                        {% endfor %}
+                    </td>
+                {% endif %}
+                <td>{{tag}}</td>
+                <td>{{test_run.eval_message}}</td>
+                <td>{{test_run.time_seconds}}</td>
+                <td>{{test_run.memory}}</td>
+                {% if not subtask_problem %}
+                    <td>{{test_run.points_awarded}}</td>
+                {% endif %}
             </tr>
         {% endfor %}
     </table>
     
+    {% if subtask_problem %}
+    <table>
+        <tr>
+            <th>Subtask</th>
+            <th>Scor</th>
+            <th>Scor maxim</th>
+        </tr>
+        {% for x in subtask_scores %}
+            <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{x.0}}</td>
+                <td>{{x.1}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
     {% if can_see_code %}
         <pre contenteditable="false" editable="false">{{source_code}}</pre>
     {% endif %}

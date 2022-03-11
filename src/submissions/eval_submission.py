@@ -2,7 +2,7 @@ import time
 import os
 from .models import Submission
 import json
-from .auxiliary_functions import read_json, BASE_DIR
+from .auxiliary_functions import read_json, BASE_DIR, score_submission
 
 
 def eval_submission(submission_id, extension, problem, compiler_type):
@@ -36,36 +36,11 @@ def eval_submission(submission_id, extension, problem, compiler_type):
 
     os.system(f"rm {submission_id}.json")
     os.system(f"rm {submission_id}.zip")
-    os.chdir(submission_path)
-
-    evaluation = read_json(f"{submission_id}.json")
-
-    evaluation.pop("submission_id")
-    compilation_result = evaluation["compilation"]
-    evaluation.pop("compilation")
-    checker_compilation = evaluation["checker-compilation"]
-    evaluation.pop("checker-compilation")
-
-    ok = True
-    if(compilation_result["error"] != "success"):
-        ok = False
-    if(submission_data["checker"] == True):
-        if(checker_compilation["error"] != "success"):
-            ok = False
-
-    if(ok):
-        verdict = 0.0
-        for tag, test_run in evaluation.items():
-            verdict += test_run["verdict"]["points_awarded"]
-        verdict = round(verdict, 2)
-    else:
-        if(compilation_result["error"] != "success"):
-            verdict = compilation_result["error"]
-        else:
-            verdict = checker_compilation["error"]
+    
+    result = score_submission(submission_id, problem.title_id)
 
     curr_submission = Submission.objects.get(id = submission_id)
-    curr_submission.verdict = str(verdict)
+    curr_submission.verdict = str(result["verdict"])
     curr_submission.save()
 
     
