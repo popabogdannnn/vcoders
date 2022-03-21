@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from pathlib import Path
 # Create your views here.
-from .auxiliary_functions import BASE_DIR, read_json
+from .auxiliary_functions import BASE_DIR, load_tests, read_json
 from .models import Problem
 from .decorators import *
 import re
@@ -90,7 +90,7 @@ def edit_problem_view(request, title_id):
     if request.method == "POST":
         if "tests" in request.FILES:
             tests = request.FILES['tests']
-            if(tests.size <= 200000000 and os.path.splitext(tests.name)[1] == ".zip"):
+            if(tests.size <= 500000000 and os.path.splitext(tests.name)[1] == ".zip"):
                 fs = FileSystemStorage(location=f"{BASE_DIR}/garbage_folder/{title_id}")
                 fs.save(tests.name, tests)
                 os.system(f'unzip {BASE_DIR}/garbage_folder/{title_id}/"{tests.name}" -d {BASE_DIR}/garbage_folder/{title_id} > /dev/null')
@@ -103,7 +103,7 @@ def edit_problem_view(request, title_id):
         restrictions = read_json(f"{BASE_DIR}/problems/{title_id}/submission_data.json")
         
         checker         = request.POST.get("checker")
-        stdio           = request.POST.get("stdio")
+        io_filename     = request.POST.get("io_filename")
         execution_time  = request.POST.get("execution_time")
         memory          = request.POST.get("memory")
         stack_memory    = request.POST.get("stack_memory")
@@ -112,18 +112,21 @@ def edit_problem_view(request, title_id):
         output_data     = request.POST.get("output")
         examples        = request.POST.get("examples")
         hint            = request.POST.get("hint")
-
+        scoring         = request.POST.get("scoring")
+        
         if(checker == "on"):
             checker = True
         else:
             checker = False
-        if(stdio == "on"):
+        if(io_filename == ""):
             stdio = True
+            io_filename = title_id
         else:
             stdio = False
 
         restrictions["checker"] = checker
         restrictions["stdio"] = stdio
+        restrictions["io_filename"] = io_filename
         restrictions["execution_time"] = max(int(execution_time), 50)
         restrictions["memory"] = int(memory)
         restrictions["stack_memory"] = int(stack_memory)
@@ -165,23 +168,20 @@ def edit_problem_view(request, title_id):
     #problem = Problem.objects.get(title_id = title_id)
     statement = read_json(f"{BASE_DIR}/problems/{title_id}/{title_id}.json")
     restrictions = read_json(f"{BASE_DIR}/problems/{title_id}/submission_data.json")
+    scoring = read_json(f"{BASE_DIR}/problems/{title_id}/scoring.json")
     statement["statement"] = "\n".join(statement["statement"])
 
+
+    if(restrictions["stdio"]):
+        restrictions["io_filename"] = ""
     context = {
         "problem": problem,
         "statement": statement,
         "restrictions": restrictions,
         "tests_seen": [],
+        "scoring": scoring,
     }
     
-    if os.path.exists(f"{BASE_DIR}/problems/{title_id}/tests/tests.txt"):
-        with open(f"{BASE_DIR}/problems/{title_id}/tests/tests.txt", "r") as f:
-            lines = f.readlines()
-            for line in lines:
-                line = line.split()
-                if(len(line) == 2):
-                    #print(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.ok")
-                    if(os.path.exists(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.in") and os.path.exists(f"{BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.ok")):
-                        context["tests_seen"].append(line[0])
-
+    context["tests_seen"] = load_tests(f"{BASE_DIR}/problems/{title_id}/tests")
+    
     return render(request, "edit_problem.html", context)

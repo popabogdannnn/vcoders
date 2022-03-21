@@ -74,6 +74,7 @@ def score_submission(submission_id, problem_id):
             verdict = round(verdict, 2)
 
             return {
+                "compilation_error": compilation_result["error"],
                 "compilation_warnings": compilation_result["warnings"],
                 "verdict" : verdict,
                 "subtask_scores" : zip(subtask_scores, subtask_max_scores),
@@ -107,7 +108,7 @@ def score_submission(submission_id, problem_id):
             verdict = checker_compilation["error"]
 
     return {
-        "compilation_error": checker_compilation["error"],
+        "compilation_error": compilation_result["error"],
         "compilation_warnings": compilation_result["warnings"],
         "verdict": verdict
     }

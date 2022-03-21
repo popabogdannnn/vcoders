@@ -52,8 +52,10 @@ def view_submission(request, submission_id):
     submission = Submission.objects.get(id=submission_id)
     submission_path = str(BASE_DIR) + "/source_code/" + str(submission_id)
     evaluation = None
-    evaluation = score_submission(submission_id, submission.problem.title_id)
-    
+    try:
+        evaluation = score_submission(submission_id, submission.problem.title_id)
+    except:
+        pass
     
     context = {
         "submission" : submission
@@ -68,7 +70,7 @@ def view_submission(request, submission_id):
         else:
             context["subtask_problem"] = False
         context["compilation_warnings"] = evaluation["compilation_warnings"]
-        context["compilation_error"] = evaluation["compilation_warnings"]
+        context["compilation_error"] = evaluation["compilation_error"]
         #print(compilation_result["warnings"])
         #checker_compilation = evaluation["checker-compilation"]
         #evaluation.pop("checker-compilation")
@@ -78,7 +80,9 @@ def view_submission(request, submission_id):
         context["test_runs"] = {
             
         }
-        if(context["subtask_problem"]):
+        if context["compilation_error"] != "success":
+            pass
+        elif(context["subtask_problem"]):
             test_summary = evaluation["test_summary"]
             for i in range(len(test_summary)):
                 eval_message = test_summary[i]["reason"]

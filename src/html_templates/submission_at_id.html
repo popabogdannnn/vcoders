@@ -15,6 +15,7 @@
         {{compilation_warnings}}
     </pre>
 
+    {% if compilation_error == "success"%}
     <table>
         <tr>
             {% if subtask_problem %}
@@ -69,6 +70,7 @@
             </tr>
         {% endfor %}
     </table>
+    {% endif %}
     {% endif %}
     {% if can_see_code %}
         <pre contenteditable="false" editable="false">{{source_code}}</pre>

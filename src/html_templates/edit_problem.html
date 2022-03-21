@@ -4,16 +4,12 @@
 
     <h2>Editează problema <a href="{% url 'problem' problem.title_id%}">{{problem.title}}</a></h2>
 
-    <p>
-        Dacă operațiile nu sunt la consolă atunci se consideră că fișierele de intrare sunt 
-        <strong>{{problem.title_id}}.in/{{problem.title_id}}.out</strong>.
-    </p>
     <form action="" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
+        <label for="io-filename">Fișier intrare .in/.out (gol pentru stdio)</label>
+        <input type="text" name="io_filename" id="io_filename" value = {{restrictions.io_filename}}>
         <label for="checker">Este nevoie de checker?</label>
         <input type="checkbox" name="checker" id="checker" {%if restrictions.checker %} checked {% endif %}>
-        <label for="stdio">Operațiile io sunt la consolă?</label>
-        <input type="checkbox" name="stdio" id="stdio" {%if restrictions.stdio %} checked {% endif %}>
         <label for="execution_time" >Timp de execuție</label>
         <input type="number" name="execution_time" id="execution_time" min="50" required="true" value="{{restrictions.execution_time}}">
         <label for="memory">Memorie în kB</label>
@@ -39,10 +35,44 @@
 
         <h3>Indicații de rezolvare</h3>
         <textarea name="hint" id="" cols="30" rows="10">{{statement.hint}}</textarea>
+        
+        <br>
+        <tr>
+            <td>Cum se punctează</td>
+            <td>
+            <select name="type" id="type">
+                <option value="score_per_test" {% if scoring.type == "score_per_test" %} selected {% endif %}>Teste punctate individual</option>
+                <option value="subtask" {% if scoring.type == "subtask" %} selected {% endif %}>Teste grupate (subtask)</option>
+            </select>
+            </td>
+        </tr>
+
+        <br>
+
+        <textarea name="" id="" cols="30" rows="10" name="scoring">{{scoring.scoring}}</textarea>
+       
+
         <h3>Teste</h3>
-        <p>Teste pe care le văd</p>
-        <p>Se trimite un zip ce contine un folder tests, care are formatul pe care l-am discutat</p>
-        <p>{{tests_seen}}</p>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Nume</th>
+                <th>Intrare</th>
+                <th>Ieșire</th>
+                <th>Acțiuni</th>
+            </tr>
+            {% for x in tests_seen %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td><b>{{x}}</b></td>
+                    <td> <a>Descărcare</a> </td>
+                    <td> <a>Descărcare</a> </td>
+                    <td> <a>Ștergere</a> </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <p>Încărcare teste:</p>
         <input type="file" name="tests" accept=".zip">
         <br>
         <input type="SUBMIT" name="submit" value="Salvează">
