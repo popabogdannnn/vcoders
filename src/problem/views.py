@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from pathlib import Path
 # Create your views here.
-from .auxiliary_functions import BASE_DIR, load_tests, read_json
+from .auxiliary_functions import BASE_DIR, check_score_per_test_array, check_subtask_array, load_tests, read_json, save_tests_seen
 from .models import Problem
 from .decorators import *
 import re
@@ -62,19 +62,13 @@ def add_problem_view(request):
                     #print("SALUTARE LUME")
                     os.mkdir(f"{BASE_DIR}/problems/{title_id}")
                     os.system(f"cp -r {BASE_DIR}/problems/sumab/. {BASE_DIR}/problems/{title_id}/")
+                
                     restrictions = read_json(f"{BASE_DIR}/problems/{title_id}/submission_data.json")
-                    with open(f"{BASE_DIR}/problems/{title_id}/tests/tests.txt", "r") as f:
-                        lines = f.readlines()
-                        for line in lines:
-                            line = line.split()
-                            #print(line[0])
-                            os.system(f"mv {BASE_DIR}/problems/{title_id}/tests/{line[0]}-sumab.in {BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.in")
-                            os.system(f"mv {BASE_DIR}/problems/{title_id}/tests/{line[0]}-sumab.ok {BASE_DIR}/problems/{title_id}/tests/{line[0]}-{title_id}.ok")
                     restrictions["io_filename"] = title_id
                     with open(f"{BASE_DIR}/problems/{title_id}/submission_data.json", "w") as f:
                         json.dump(restrictions, f)
-                if(not os.path.exists(f"{BASE_DIR}/problems/{title_id}/{title_id}.json")):
-                    os.system(f"cp {BASE_DIR}/problems/sumab/sumab.json {BASE_DIR}/problems/{title_id}/{title_id}.json")
+                    os.system(f"mv {BASE_DIR}/problems/{title_id}/sumab.json {BASE_DIR}/problems/{title_id}/{title_id}.json")
+                    
                 return redirect("edit_problem", title_id)
     context = {
 
@@ -87,6 +81,8 @@ def edit_problem_view(request, title_id):
     problem = Problem.objects.get(title_id = title_id)
     if(problem.posted_by != request.user and not request.user.is_superuser):
         return HttpResponse("Nu ai acces la această resursă")
+    scoring = None
+    errors = []
     if request.method == "POST":
         if "tests" in request.FILES:
             tests = request.FILES['tests']
@@ -99,6 +95,7 @@ def edit_problem_view(request, title_id):
                     os.system(f"rm -rf {BASE_DIR}/problems/{title_id}/tests")
                     os.system(f"cp -r {BASE_DIR}/garbage_folder/{title_id}/tests {BASE_DIR}/problems/{title_id}/tests")
                 os.system(f"rm -rf {BASE_DIR}/garbage_folder/{title_id}")
+                save_tests_seen(f"{BASE_DIR}/problems/{title_id}")
         statement = read_json(f"{BASE_DIR}/problems/{title_id}/{title_id}.json")
         restrictions = read_json(f"{BASE_DIR}/problems/{title_id}/submission_data.json")
         
@@ -110,10 +107,35 @@ def edit_problem_view(request, title_id):
         p_statement     = request.POST.get("statement")
         input_data      = request.POST.get("input")
         output_data     = request.POST.get("output")
+        remarks         = request.POST.get("remarks")
         examples        = request.POST.get("examples")
         hint            = request.POST.get("hint")
-        scoring         = request.POST.get("scoring")
+        scoring_array   = request.POST.get("scoring")
+        scoring_type    = request.POST.get("type")
         
+        if(scoring_type == "score_per_test"):
+            verdict = check_score_per_test_array(scoring_array, f"{BASE_DIR}/problems/{title_id}")
+            if(not isinstance(verdict, dict)):
+                errors.append(verdict)
+                scoring = {
+                    "type": scoring_type,
+                    "scoring": scoring_array
+                }
+            else:
+                scoring = verdict
+                problem.can_submit = True
+        elif(scoring_type == "subtask"):
+            verdict = check_subtask_array(scoring_array, f"{BASE_DIR}/problems/{title_id}")
+            if(not isinstance(verdict, dict)):
+                errors.append(verdict)
+                scoring = {
+                    "type": scoring_type,
+                    "scoring": scoring_array
+                }
+            else:
+                scoring = verdict
+                problem.can_submit = True
+
         if(checker == "on"):
             checker = True
         else:
@@ -132,6 +154,8 @@ def edit_problem_view(request, title_id):
         restrictions["stack_memory"] = int(stack_memory)
         
         p_statement = p_statement.split("\n")
+        remarks = remarks.split("\n")
+
         examples_dict = {
 
         }
@@ -140,11 +164,11 @@ def edit_problem_view(request, title_id):
         for example in examples:
             if isinstance(example, str):
                 if example.find("@-input-@"):
-                    tag += 1
                     p_input = ""
                     p_output = ""
                     r = re.split("@-input-@|@-output-@", example)
                     if(len(r) == 3):
+                        tag += 1
                         p_input = r[1].strip()
                         p_output = r[2].strip()
                         examples_dict[str(tag)] = {
@@ -157,6 +181,7 @@ def edit_problem_view(request, title_id):
         statement["hint"] = hint
         statement["examples"] = examples_dict
         statement["statement"] = p_statement
+        statement["remarks"] = remarks
         
         with open(f"{BASE_DIR}/problems/{title_id}/{title_id}.json", "w") as f:
             json.dump(statement, f, indent=4)
@@ -168,10 +193,25 @@ def edit_problem_view(request, title_id):
     #problem = Problem.objects.get(title_id = title_id)
     statement = read_json(f"{BASE_DIR}/problems/{title_id}/{title_id}.json")
     restrictions = read_json(f"{BASE_DIR}/problems/{title_id}/submission_data.json")
-    scoring = read_json(f"{BASE_DIR}/problems/{title_id}/scoring.json")
+    
+    if(scoring == None):
+        scoring = read_json(f"{BASE_DIR}/problems/{title_id}/scoring.json")
+        if(scoring["type"] == "score_per_test"):
+            verdict = check_score_per_test_array(str(scoring["scoring"]), f"{BASE_DIR}/problems/{title_id}")
+            if(not isinstance(verdict, dict)):
+                errors.append(verdict)
+                problem.can_submit = False
+                problem.save()
+        elif(scoring["type"] == "subtask"):
+            verdict = check_subtask_array(str(scoring["scoring"]), f"{BASE_DIR}/problems/{title_id}")
+            if(not isinstance(verdict, dict)):
+                errors.append(verdict)
+                problem.can_submit = False
+                problem.save()
+    
     statement["statement"] = "\n".join(statement["statement"])
-
-
+    statement["remarks"] = "\n".join(statement["remarks"])
+    
     if(restrictions["stdio"]):
         restrictions["io_filename"] = ""
     context = {
@@ -180,6 +220,7 @@ def edit_problem_view(request, title_id):
         "restrictions": restrictions,
         "tests_seen": [],
         "scoring": scoring,
+        "errors": errors,
     }
     
     context["tests_seen"] = load_tests(f"{BASE_DIR}/problems/{title_id}/tests")

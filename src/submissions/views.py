@@ -8,7 +8,7 @@ from .auxiliary_functions import read_json, BASE_DIR, score_submission
 # Create your views here.
 from .models import *
 from problem.models import *
-MAX_CODE_SIZE = 20 * 1024
+MAX_CODE_SIZE = 64 * 1024
 
 extension_by_compiler = {
     "c++64" : ".cpp",
@@ -22,6 +22,8 @@ def send_submission(request):
     if request.method == "POST" and request.user.is_authenticated:
         problem_id = request.POST.get("problem_id")
         problem = Problem.objects.get(id = problem_id)
+        if(not problem.can_submit):
+            redirect("home")
         compiler_type = request.POST.get("compiler_type")
         source_code = request.POST.get("source_code")
 

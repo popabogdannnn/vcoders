@@ -24,25 +24,25 @@ def load_tests(path):
     return test_list
     
 def save_tests_seen(path):
-    test_list = load_tests(path)
-    os.system("mkdir aux")
+    test_list = load_tests(f"{path}/tests")
+    os.system(f"mkdir {path}/aux")
 
     for tag in test_list:
-        os.system(f"cp tests/{tag}.in aux/")
-        os.system(f"cp tests/{tag}.ok aux/")
+        os.system(f"cp {path}/tests/{tag}.in {path}/aux/")
+        os.system(f"cp {path}/tests/{tag}.ok {path}/aux/")
     
-    os.system("rm -rf tests")
-    os.system(f"mv aux tests")
+    os.system(f"rm -rf {path}/tests")
+    os.system(f"mv {path}/aux {path}/tests")
 
-def check_subtask_array(array_as_string):
-    with open("aux.json", "w") as f:
+def check_subtask_array(array_as_string, path):
+    with open(f"{path}/aux.json", "w") as f:
         f.write(array_as_string)
     ret = []
-    test_list = load_tests()
-    os.system("rm scoring.json 2> /dev/null")
+    test_list = load_tests(f"{path}/tests")
+    #os.system(f"rm {path}/scoring.json 2> /dev/null")
     try:
-        arr = load_json("aux.json")
-        os.system("rm aux.json 2> /dev/null")
+        arr = load_json(f"{path}/aux.json")
+        os.system(f"rm {path}/aux.json 2> /dev/null")
         if not isinstance(arr, list):
             raise NameError("Not an array")
         if len(arr) != 2:
@@ -81,25 +81,25 @@ def check_subtask_array(array_as_string):
     except NameError as error:
         return error.__str__() 
     except json.decoder.JSONDecodeError:
-        os.system("rm aux.json 2> /dev/null")
+        os.system(f"rm {path}/aux.json 2> /dev/null")
         return "String does not correctly describe an array"
     ret = {
         "type": "subtask",
         "scoring": arr
     }
-    with open("scoring.json", "w") as f:
+    with open(f"{path}/scoring.json", "w") as f:
         json.dump(ret, f, indent = 4)
-    return True
+    return ret
 
-def check_score_per_test_array(array_as_string):
-    with open("aux.json", "w") as f:
+def check_score_per_test_array(array_as_string, path):
+    with open(f"{path}/aux.json", "w") as f:
         f.write(array_as_string)
     ret = []
-    test_list = load_tests()
-    os.system("rm subtasks.json 2> /dev/null")
+    test_list = load_tests(f"{path}/tests")
+    #os.system(f"rm {path}/scoring.json 2> /dev/null")
     try:
-        arr = load_json("aux.json")
-        os.system("rm aux.json 2> /dev/null")
+        arr = load_json(f"{path}/aux.json")
+        os.system(f"rm {path}/aux.json 2> /dev/null")
         if not isinstance(arr, list):
             raise NameError("Not an array")
         if(len(arr) != len(test_list)):
@@ -116,7 +116,7 @@ def check_score_per_test_array(array_as_string):
     except NameError as error:
         return error.__str__() 
     except json.decoder.JSONDecodeError:
-        os.system("rm aux.json 2> /dev/null")
+        os.system(f"rm {path}/aux.json 2> /dev/null")
         return "String does not correctly describe an array"
 
     ret = {
@@ -124,6 +124,6 @@ def check_score_per_test_array(array_as_string):
         "scoring":arr
     }
 
-    with open("scoring.json", "w") as f:
+    with open(f"{path}/scoring.json", "w") as f:
         json.dump(ret, f, indent = 4)
-    return True
+    return ret

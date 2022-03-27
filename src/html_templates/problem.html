@@ -38,6 +38,14 @@
     <h4>Date de ieșire</h4>
     <p>{{statement.output}}</p>
     
+    <h4>Restricții și precizări</h4>
+    <ul>
+        {% for remark in statement.remarks %}
+            <li><p>{{remark}}</p></li>
+        {% endfor %}
+    </ul>
+    <!-- <pre editable="false" contenteditable="false">{{statement.remarks}}</pre> -->
+    
     {% for tag, ex in statement.examples.items%}
         <h4>Exemplu {{tag}}</h4>
         <p><strong>{{in_file}}</strong></p>
@@ -46,14 +54,14 @@
         <pre editable="false" contenteditable="false">{{ex.output}}</pre>
     {% endfor %}
 
-    {% if request.user.is_authenticated %}
+    {% if request.user.is_authenticated and problem.can_submit %}
         <form action="{% url 'send-submission' %}" method="POST">
             {% csrf_token %}
             <input type="hidden" name="problem_id" value="{{problem.id}}">
             <label for="compiler-type">Compilator</label>
             <select name="compiler_type" id="compiler-type">
-                <option value="c++64" selected>C++ 64bit</option>
-                <option value="c++32">C++ 32bit</option>
+                <option value="c++64">C++ 64bit</option>
+                <option value="c++32" selected>C++ 32bit</option>
                 <option value="c64">C 64bit</option>
                 <option value="c32">C 32bit</option>
             </select>

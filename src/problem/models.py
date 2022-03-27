@@ -5,6 +5,7 @@ class Problem(models.Model):
     title = models.CharField(max_length=64)
     title_id = models.CharField(max_length=64)
     accepted = models.BooleanField(default=False)
+    can_submit = models.BooleanField(default=False)
     author = models.CharField(max_length=128, default="-")
     posted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 

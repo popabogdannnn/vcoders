@@ -25,6 +25,9 @@
         <h3>Date de ieșire</h3>
         <textarea name="output" cols="30" rows="10">{{statement.output}}</textarea>
 
+        <h3>Restricții și precizări</h3>
+        <textarea name="remarks" cols="30" rows="10">{{statement.remarks}}</textarea>
+
         <h3>Exemple</h3>
         <textarea name="examples" cols="30" rows="10">{% for tag, example in statement.examples.items %}
 @-nou_exemplu-@
@@ -49,8 +52,13 @@
 
         <br>
 
-        <textarea name="" id="" cols="30" rows="10" name="scoring">{{scoring.scoring}}</textarea>
-       
+        <textarea name="scoring" cols="30" rows="10" >{{scoring.scoring}}</textarea>
+        
+        <br>
+
+        {% for error in errors %}
+            <p>{{error}}</p>
+        {% endfor %}
 
         <h3>Teste</h3>
         <table>
