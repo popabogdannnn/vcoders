@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content_base_body %}
+
+
+{% for year, contests in contest_dict.items %}
+    <h4>{{year}}</h4>
+
+    {% for contest in contests %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th colspan="15" class="text-center col">{{contest.obj}}</th>
+                </tr>
+            </thead>
+            <tr>
+                {% for sub_contest in contest.sub_contests %}
+                    <td class="text-center col">
+                        <a href='{% url "sub_contest" sub_contest.id %}'>{{sub_contest.sub_contest_level}}</a>
+                    </td>
+                {% endfor %}
+            </tr>
+        </table>
+    {% endfor %}
+{% endfor %}
+    
+
+{% endblock content_base_body %}

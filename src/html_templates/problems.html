@@ -2,11 +2,11 @@
 
 {% block content_base_body %}
 
-    <h1>Probleme</h1>
+    <h1>{{title}}</h1>
 
     <ul>
         {% for problem in problem_list %}
-            <li> <a href="{% url 'problem' problem.title_id%}">{{ problem }}</a>  </li>
+            <li> <a href="{% url 'problem' problem.title_id%}">{{ problem }}</a> </li>
         {% endfor %}
 
     </ul>

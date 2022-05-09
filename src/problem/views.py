@@ -1,18 +1,22 @@
+from datetime import datetime
+from gettext import NullTranslations
 import json
+from multiprocessing import parent_process
 from django.shortcuts import render
 from django.http import HttpResponse
 from pathlib import Path
 # Create your views here.
 from .auxiliary_functions import BASE_DIR, check_score_per_test_array, check_subtask_array, load_tests, read_json, save_tests_seen
-from .models import Problem
+from .models import Problem, Contest, SubContest, SubContestLevel
 from .decorators import *
 import re
 from django.core.files.storage import FileSystemStorage
 import os 
 
 def problems_view(request):
-    problem_list = [problem for problem in Problem.objects.all()]
+    problem_list = Problem.objects.all()
     context = {
+        "title": "Probleme",
         "problem_list" : problem_list
     }
     return render(request, "problems.html", context)
@@ -52,12 +56,24 @@ def problem_view(request, problem_id):
 @authorized_users(authorized_roles=["proponent"])
 def add_problem_view(request):
     if request.method == "POST":
-        title = request.POST.get("title")
+        title               = request.POST.get("title")
+        in_contest          = request.POST.get("in_contest")
+        contest             = request.POST.get("contest")
+        sub_contest_level   = request.POST.get("sub_contest_level")
         if(len(title) > 0):
             title = " ".join(title.split())
             title_id = "_".join(title.lower().split())
+
             if len(title) <= 64 and not Problem.objects.filter(title_id=title_id).exists():
                 Problem.objects.create(title=title, title_id=title_id, posted_by=request.user)
+                if(in_contest):
+                    contest = Contest.objects.get(id=contest)
+                    sub_contest_level = SubContestLevel.objects.get(id=sub_contest_level)
+                    if(not SubContest.objects.filter(parent_contest = contest, sub_contest_level = sub_contest_level).exists()):
+                        SubContest.objects.create(parent_contest = contest, sub_contest_level = sub_contest_level)
+                    sub_contest = SubContest.objects.get(parent_contest = contest, sub_contest_level = sub_contest_level)
+                    sub_contest.problem_list.add(Problem.objects.get(title_id=title_id))
+                    sub_contest.save()
                 if(not os.path.exists(f"{BASE_DIR}/problems/{title_id}")):
                     #print("SALUTARE LUME")
                     os.mkdir(f"{BASE_DIR}/problems/{title_id}")
@@ -71,7 +87,8 @@ def add_problem_view(request):
                     
                 return redirect("edit_problem", title_id)
     context = {
-
+        "contests": Contest.objects.all(),
+        "sub_contest_levels": SubContestLevel.objects.all(),
     }
     return render(request, "add_problem.html", context)
 
@@ -196,18 +213,20 @@ def edit_problem_view(request, title_id):
     
     if(scoring == None):
         scoring = read_json(f"{BASE_DIR}/problems/{title_id}/scoring.json")
-        if(scoring["type"] == "score_per_test"):
-            verdict = check_score_per_test_array(str(scoring["scoring"]), f"{BASE_DIR}/problems/{title_id}")
-            if(not isinstance(verdict, dict)):
-                errors.append(verdict)
-                problem.can_submit = False
-                problem.save()
-        elif(scoring["type"] == "subtask"):
-            verdict = check_subtask_array(str(scoring["scoring"]), f"{BASE_DIR}/problems/{title_id}")
-            if(not isinstance(verdict, dict)):
-                errors.append(verdict)
-                problem.can_submit = False
-                problem.save()
+        
+    if(scoring["type"] == "score_per_test"):
+        verdict = check_score_per_test_array(str(scoring["scoring"]), f"{BASE_DIR}/problems/{title_id}")
+        if(not isinstance(verdict, dict)):
+            errors.append(verdict)
+            problem.can_submit = False
+            problem.save()
+    elif(scoring["type"] == "subtask"):
+        verdict = check_subtask_array(str(scoring["scoring"]), f"{BASE_DIR}/problems/{title_id}")
+        
+        if(not isinstance(verdict, dict)):
+            errors.append(verdict)
+            problem.can_submit = False
+            problem.save()
     
     statement["statement"] = "\n".join(statement["statement"])
     statement["remarks"] = "\n".join(statement["remarks"])
@@ -226,3 +245,33 @@ def edit_problem_view(request, title_id):
     context["tests_seen"] = load_tests(f"{BASE_DIR}/problems/{title_id}/tests")
     
     return render(request, "edit_problem.html", context)
+
+def contests_view(request):
+    contests = Contest.objects.all().order_by("-date")
+    contest_dict = {
+
+    }
+    
+    for x in contests:
+        contest_dict[x.date.year] = []
+    for x in contests:
+        contest_dict[x.date.year].append({
+            "obj": x,
+            "sub_contests": SubContest.objects.filter(parent_contest=x)
+        })
+    
+    context = {
+        "contest_dict": contest_dict
+    }
+    return render(request, "contest_archive.html", context)
+
+def sub_contest_view(request, sub_contest_id):
+    sub_contest = SubContest.objects.get(id=sub_contest_id)
+    context = {
+        "title": sub_contest,
+        "problem_list": sub_contest.problem_list.filter()
+    }
+    return render(request, "problems.html", context)
+
+
+

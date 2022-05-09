@@ -28,6 +28,8 @@ def save_tests_seen(path):
     os.system(f"mkdir {path}/aux")
 
     for tag in test_list:
+        os.system(f"dos2unix {path}/tests/{tag}.in 2> /dev/null")
+        os.system(f"dos2unix {path}/tests/{tag}.ok 2> /dev/null")
         os.system(f"cp {path}/tests/{tag}.in {path}/aux/")
         os.system(f"cp {path}/tests/{tag}.ok {path}/aux/")
     
@@ -44,36 +46,36 @@ def check_subtask_array(array_as_string, path):
         arr = load_json(f"{path}/aux.json")
         os.system(f"rm {path}/aux.json 2> /dev/null")
         if not isinstance(arr, list):
-            raise NameError("Not an array")
+            raise NameError("Șirul nu descrie corect un array")
         if len(arr) != 2:
-            raise NameError("Array length not 2")
+            raise NameError("Array-ul nu are lungime 2")
         
         subtask_distribution = arr[0]
         subtask_scores = arr[1]
 
         if(not isinstance(subtask_distribution, list)):
-            raise NameError("First component not an array")
+            raise NameError("Prima componentă nu este un array")
 
         if(not isinstance(subtask_scores, list)):
-            raise NameError("Second component not an array")
+            raise NameError("A doua componentă nu este un array")
 
         if(len(test_list) != len(subtask_distribution)):
-            raise NameError("Number of tests does not match with length of subtask distribution")
+            raise NameError("Numărul de teste nu este egal cu lungimea distribuției pe subtask-uri")
 
         score = 0
         for x in subtask_scores:
             if not isinstance(x, int):
-                raise NameError("Subtask scores not integers")
+                raise NameError("Scorurile subtask-urilor nu sunt numere naturale")
             if x <= 0:
-                raise NameError("Subtask scores are <= 0")
+                raise NameError("Scorurile subtaskurilor sunt <= 0")
             score += x
         if score != 100: 
-            raise NameError("Subtask scores do not add up to 100p")
+            raise NameError("Suma scorurilor subtask-urilor nu este egală cu 100p")
         for d in subtask_distribution:
             if not isinstance(d, list):
-                raise NameError("Elements from subtask distribution are not arrays")
+                raise NameError("Elementele din distribuția pe subtask-uri nu sunt array-uri")
             if(len(d) == 0):
-                raise NameError("Test not associated with any subtask")
+                raise NameError("Există cel puțin un test neasociat cu niciun subtask")
             for x in d:
                 if not isinstance(x, int) or x <= 0 or x > len(subtask_scores):
                     raise NameError("Subtask non-existent")
@@ -82,7 +84,7 @@ def check_subtask_array(array_as_string, path):
         return error.__str__() 
     except json.decoder.JSONDecodeError:
         os.system(f"rm {path}/aux.json 2> /dev/null")
-        return "String does not correctly describe an array"
+        return "Șirul nu descrie corect un array"
     ret = {
         "type": "subtask",
         "scoring": arr
@@ -101,23 +103,23 @@ def check_score_per_test_array(array_as_string, path):
         arr = load_json(f"{path}/aux.json")
         os.system(f"rm {path}/aux.json 2> /dev/null")
         if not isinstance(arr, list):
-            raise NameError("Not an array")
+            raise NameError("Șirul nu descrie corect un array")
         if(len(arr) != len(test_list)):
-            raise NameError("Test scoring array not the same length as number of tests")
+            raise NameError("Lungimea array-ului de punctare al testelor și numărul de teste nu sunt egale")
         
         score = 0
         for x in arr:
             if not isinstance(x, int) or x <= 0:
-                raise NameError("Test is scored with <= 0")
+                raise NameError("Un test este punctat cu <= 0")
             score += x
         if score != 100:
-            raise NameError("Test scores do not add up to 100p")
+            raise NameError("Suma punctajelor pe teste nu face 100p")
         
     except NameError as error:
         return error.__str__() 
     except json.decoder.JSONDecodeError:
         os.system(f"rm {path}/aux.json 2> /dev/null")
-        return "String does not correctly describe an array"
+        return "Șirul nu descrie corect un array"
 
     ret = {
         "type":"score_per_test",

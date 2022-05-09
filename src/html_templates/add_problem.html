@@ -8,6 +8,24 @@
         {% csrf_token %}
         <label for="title">Titlu</label>
         <input type="text" name="title" placeholder="Titlu problemă" maxlength="64">
+        <br>
+        <label for="in_contest">Problema a fost dată într-un concurs?</label>
+        <input type="checkbox" name="in_contest" id="in_contest">
+        <br>
+        <label for="contest">În ce concurs a fost dată problema?</label>
+        <select name="contest" id="contest">
+            {% for contest in contests %}
+                <option value={{contest.id}}>{{contest}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="sub_contest_level">Nivelul problemei în concurs</label>
+        <select name="sub_contest_level" id="sub_contest_level">
+            {% for level in sub_contest_levels %}
+                <option value={{level.id}}>{{level}}</option>
+            {% endfor %}
+        </select>
+        <br>
         <input type="SUBMIT" name="submit" value="Creează problemă">
     </form>
 
