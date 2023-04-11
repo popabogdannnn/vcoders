@@ -30,7 +30,7 @@
         <a href="{% url 'edit_problem' problem.title_id%}">Modifică</a>
     {% endif %}
     {% for line in statement.statement %}
-        <p>{{line|urlize}}<p>
+        <p>{{line|safe}}<p>
     {% endfor %}
     
     <h4>Date de intrare</h4>

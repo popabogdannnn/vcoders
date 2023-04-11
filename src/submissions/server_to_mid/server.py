@@ -24,6 +24,7 @@ FORMAT = 'utf-8'
 
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 connected = False
 while not connected:
     try:
@@ -42,8 +43,5 @@ send_file(filename, client)
 msg = receive_msg(client, True)
 if (msg == SEND_FILE_MESSAGE):
     filename = receive_file(client)
-
-#print(time.time() - start)
-
 client.close()
 

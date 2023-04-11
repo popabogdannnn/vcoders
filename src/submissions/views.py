@@ -4,6 +4,7 @@ import problem
 from multiprocessing import Process
 import os
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from .auxiliary_functions import read_json, BASE_DIR, score_submission
 # Create your views here.
 from .models import *
@@ -17,6 +18,7 @@ extension_by_compiler = {
     "c32" : ".c",
 }
 
+@csrf_exempt
 @login_required(login_url = 'login')
 def send_submission(request):
     if request.method == "POST" and request.user.is_authenticated:
